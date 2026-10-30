@@ -28,7 +28,7 @@ const [pagePath, dataPath, outPath = path.join(ROOT, 'index.html')] = process.ar
 const code = process.env.ACCESS_CODE;
 if (!pagePath || !dataPath) fail('usage: ACCESS_CODE=<code> node tools/build_site.js <gallup page .html> <records .json> [out]');
 if (!code) fail('ACCESS_CODE is not set');
-if (code.length < 10) fail('ACCESS_CODE is shorter than 10 characters; use a longer random code');
+if (code.length < 10) console.error('build_site: warning: the access code is short (' + code.length + ' characters). Anyone who saves the page can try every code offline; 10+ random characters are recommended.');
 const sri = b => 'sha384-' + crypto.createHash('sha384').update(b).digest('base64');
 const CSP = "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'";
 const COLLS = ['ideas', 'styles', 'materials', 'vendors', 'samples', 'changes', 'issues'];
@@ -116,7 +116,9 @@ if (!gate.includes('content="' + CSP + '"')) fail('tools/gate.html has lost its 
 if (!/name="referrer" content="no-referrer"/.test(gate)) fail('tools/gate.html has lost its no-referrer setting');
 if (!/name="robots" content="noindex,nofollow"/.test(gate)) fail('tools/gate.html has lost its noindex setting');
 if (/(?:src|href|action)="\s*(?:https?:)?\/\//i.test(gate) || /url\(\s*['"]?(?:https?:)?\/\//i.test(gate)) fail('tools/gate.html loads something from another server');
-const out = gate.replace('/*PAYLOAD*/', () => payload);
+let gateOut = gate;
+if (/^\d+$/.test(code)) gateOut = gateOut.replace('autocapitalize="characters"', 'inputmode="numeric" autocapitalize="characters"');
+const out = gateOut.replace('/*PAYLOAD*/', () => payload);
 
 // ---- self-checks
 const d = crypto.createDecipheriv('aes-256-gcm', key, iv);
