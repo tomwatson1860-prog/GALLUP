@@ -32,6 +32,8 @@ ACCESS_CODE=<code> node tools/check_site.js index.html <gallup-records.json>
 - Nothing loads from other servers.
 - An altered copy of the fingerprinted font stylesheet is refused.
 
+GitHub Pages publishes the `gh-pages` branch. Commit to `main` and push it to both branches (`git push origin main main:gh-pages`).
+
 The access code is never stored in this repository. Never commit a records file either: it is readable.
 
 ## Safety
