@@ -8,6 +8,10 @@ The site asks for an access code. The app and its records are stored in `index.h
 
 This copy starts from the Gallup records as of October 30, 2026.
 
+## Add it to a phone's home screen
+
+In Safari on iPhone or iPad, open the site and choose **Share › Add to Home Screen**. It gets the Gallup horse icon (`apple-touch-icon.png`, made from `tools/logo.svg` by `tools/make_icons.js`) and opens full screen like an app. A home-screen copy keeps its own records, separate from Safari's, so use Export and Import to move records between them.
+
 ## How records work on the website
 
 - Records start from the copy bundled into the page. Each visitor's changes are saved in their own browser (`localStorage`), not on a server, so they are not shared with other people.
@@ -38,7 +42,7 @@ The access code is never stored in this repository. Never commit a records file 
 
 ## Safety
 
-- Everything the page needs is served from this site. The fonts (Archivo, Source Sans 3, IBM Plex Mono; latin and latin-ext only) are in `fonts/` with their licences, and `fonts/fonts.css` is fingerprinted (Subresource Integrity, SHA-384), so a browser refuses an altered copy. Gallup uses no outside script libraries; `tools/libs.json` lists none, and the build stops if the page tries to load one.
+- Everything the page needs is served from this site. The icons are in the site root. The fonts (Archivo, Source Sans 3, IBM Plex Mono; latin and latin-ext only) are in `fonts/` with their licences, and `fonts/fonts.css` is fingerprinted (Subresource Integrity, SHA-384), so a browser refuses an altered copy. Gallup uses no outside script libraries; `tools/libs.json` lists none, and the build stops if the page tries to load one.
 - The code screen and the app set a Content Security Policy that blocks loading anything from other servers, and send no referrer when visitors follow a link out. Search engines are asked not to index the site.
 - No cookies, analytics or forms that send data. The access code is checked in the visitor's browser and never leaves it.
 - A code screen only keeps out people who don't have the code. Anyone can save the page and try codes offline: a short code, such as 4 digits, can be found that way within minutes, so it only stops casual visitors. A code of 10 or more random characters makes that impractical. Change the code (by rebuilding with a new one) if it is shared too widely.

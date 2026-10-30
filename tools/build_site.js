@@ -84,12 +84,19 @@ const safeJs = s => s.replace(/</g, '\\u003c').split(LS_).join('\\u2028').split(
 const shim = fs.readFileSync(path.join(__dirname, 'web_shim.js'), 'utf8');
 if (/<\/script/i.test(shim)) fail('tools/web_shim.js must not contain a closing script tag');
 
+// ---- home-screen icon and app tags (iPhone "Add to Home Screen" reads them from the open page)
+const appHead = fs.readFileSync(path.join(__dirname, 'app_head.html'), 'utf8');
+for (const m of appHead.matchAll(/href="([^"]+)"/g)) if (!fs.existsSync(path.join(ROOT, m[1]))) fail('missing icon file ' + m[1] + ' (run node tools/make_icons.js)');
+if (!/rel="apple-touch-icon" href="apple-touch-icon.png"/.test(appHead)) fail('tools/app_head.html has lost the home-screen icon');
+if (!fs.readFileSync(path.join(__dirname, 'gate.html'), 'utf8').includes(appHead.trim())) fail('tools/gate.html must carry the same icon and app tags as tools/app_head.html');
+
 // ---- the full page
 page = '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n' +
   '<meta http-equiv="Content-Security-Policy" content="' + CSP + '">\n' +
   '<meta name="referrer" content="no-referrer">\n' +
   '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n' +
   '<meta name="robots" content="noindex,nofollow">\n' +
+  appHead +
   '<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>\n' +
   '<script>window.__GALLUP_SNAPSHOT=' + safeJs(JSON.stringify(snapshot)) + ';</script>\n' +
   '<script>\n' + shim + '\n</script>\n</head>\n<body>\n' + page + '\n</body>\n</html>\n';

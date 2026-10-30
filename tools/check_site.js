@@ -42,6 +42,11 @@ async function open(ctx, base) {
   try {
     const ctx = await b.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true });
     const { p, log } = await open(ctx, base);
+    // home-screen icon on the code screen
+    const iconGate = await p.evaluate(() => (document.querySelector('link[rel="apple-touch-icon"]') || {}).href || '');
+    if (!iconGate) problems.push('the code screen has no home-screen icon');
+    else { const r = await ctx.request.get(iconGate); const buf = await r.body(); const w = buf.readUInt32BE(16), h = buf.readUInt32BE(20);
+      if (r.status() !== 200 || buf.toString('ascii', 1, 4) !== 'PNG' || w !== 180 || h !== 180) problems.push('the home-screen icon is not a 180x180 PNG'); info.homeScreenIcon = w + 'x' + h; }
     // wrong code, then the right one
     await p.fill('#code', wrong); await p.click('#go');
     await p.waitForFunction(() => /not right/.test((document.getElementById('err') || {}).textContent || ''), null, { timeout: 30000 }).catch(() => problems.push('a wrong code was not refused'));
@@ -52,11 +57,13 @@ async function open(ctx, base) {
       brand: (document.querySelector('.brand b') || {}).textContent,
       styles: Number(((document.querySelector('.nav a[href="#styles"] .ct') || {}).textContent) || 0),
       local: !!window.__gallupLocal, persistent: window.__gallupLocal && window.__gallupLocal.persistent,
+      icon: !!document.querySelector('link[rel="apple-touch-icon"][href="apple-touch-icon.png"]'), appTitle: (document.querySelector('meta[name="apple-mobile-web-app-title"]') || {}).content,
       csp: !!document.querySelector('meta[http-equiv="Content-Security-Policy"]'),
     }));
     if (s.brand !== 'Gallup') problems.push('the Gallup header is missing');
     if (!s.local) problems.push('the website records store did not load');
     if (!s.csp) problems.push('the opened page has no Content Security Policy');
+    if (!s.icon || s.appTitle !== 'Gallup') problems.push('the opened app has lost its home-screen icon or title');
     if (data) {
       const season = (data.settings && data.settings.currentSeason) || 'SS27';
       const want = data.collections.styles.filter(x => x.season === season).length;
